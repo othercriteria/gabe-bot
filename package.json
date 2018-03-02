@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/othercriteria/gabe-bot/issues"
   },
-  "homepage": "https://github.com/othercriteria/gabe-bot#readme"
+  "homepage": "https://github.com/othercriteria/gabe-bot#readme",
+  "dependencies": {
+    "twitter": "^1.7.1"
+  }
 }
