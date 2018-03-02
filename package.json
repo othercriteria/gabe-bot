@@ -1,0 +1,19 @@
+{
+  "name": "gabe-bot",
+  "version": "0.0.1",
+  "description": "Turn 'is bad' into 'is good', and vice versa, on Twitter.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/othercriteria/gabe-bot.git"
+  },
+  "author": "Daniel Klein <othercriteria@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/othercriteria/gabe-bot/issues"
+  },
+  "homepage": "https://github.com/othercriteria/gabe-bot#readme"
+}
