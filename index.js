@@ -1,32 +1,50 @@
-var Twitter = require('twitter');
+const Twitter = require('twitter');
 
-var credentials = require('./credentials');
-var client = new Twitter(credentials);
+const credentials = require('./credentials');
+const client = new Twitter(credentials);
 
-// XXX: starting with just "is bad" for now
-var query_bad = '"is bad" -filter:retweets';
+// XXX: starting with just "is good" for now
+const query_good = '"is good" -filter:retweets';
 
 // Being particular about capitalization and punctutation, since
 // I'll want to be able to easily reverse the statement.
-var rgx_bad = /^([A-Z])([a-z]*) (\w+ )*is bad.$/
+const re_good = /([A-Z])(([a-z]+) (\w+ ))*is good\./
+
+const to_bad = (match =>
+		'What if ' + match[1].toLowerCase() + match[2] + 'is bad?');
 
 function searchAndTweet(succeed, fail) {
-    console.log('search and tweet');
-
-    client.get('search/tweets', { q: query_bad, count: 50 },
+    client.get('search/tweets',
+	       { q: query_good, count: 100 },
 	       function(err, tweets, response) {
-		   if (~tweets.statuses) {
+		   if (!tweets.statuses) {
 		       fail(err);
 		   }
 
 		   tweets.statuses.forEach(function(tweet) {
-		       var match = tweet.text.match(rgx_bad);
+		       const match = tweet.text.match(re_good);
 		       if (match) {
-			   var tweetId = tweet.id_str;
+			   const tweetId = tweet.id_str;
+			   const userId = tweet.user.id_str;
+			   const userName = tweet.user.screen_name;
 
-			   console.log(tweetId + ' ' + tweet.text);
+			   const newTweet = to_bad(match);
+
+			   const qtUrl = ('https://twitter.com/' +
+					  userName +
+					  '/status/' +
+					  tweetId);
+
+			   // console.log(qtUrl, newTweet);
+
+			   client.post('statuses/update',
+				       { status: newTweet,
+					 attachment_url: qtUrl },
+				       function(err, tweet, response) {
+					   console.log(err || tweet.text);
+				       });
 		       } else {
-			   console.log('Regex failed.');
+			   // do nothing
 		       }
 		   });
 
