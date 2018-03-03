@@ -16,10 +16,19 @@ const query_good = '"is good" -filter:retweets';
 
 // Being particular about capitalization and punctutation, since
 // I'll want to be able to easily reverse the statement.
-const re_good = /([A-Z])(\w+(\s\w+)+\s)is good\./
+const re_good = /^(@\w+\s+)*.*\s([A-Z])(\w+(\s\w+)+\s)is good\./
 
-const to_bad = (match =>
-		'What if ' + match[1].toLowerCase() + match[2] + 'is bad?');
+const toBad = (match =>
+	       'What if ' + match[2].toLowerCase() + match[3] + 'is bad?');
+
+const doTweet = ((message, url) => {
+    client.post('statuses/update',
+		{ status: message,
+		  attachment_url: url },
+		function(err, tweet, response) {
+		    console.log(err || tweet.text);
+		});
+});
 
 function searchAndTweet(succeed, fail) {
     client.get('search/tweets',
@@ -32,13 +41,11 @@ function searchAndTweet(succeed, fail) {
 		   tweets.statuses.forEach(function(tweet) {
 		       const match = tweet.text.match(re_good);
 		       if (match) {
-			   console.log(tweet.text)
-
 			   const tweetId = tweet.id_str;
 			   const userId = tweet.user.id_str;
 			   const userName = tweet.user.screen_name;
 
-			   const newTweet = to_bad(match);
+			   const newTweet = toBad(match);
 
 			   const qtUrl = ('https://twitter.com/' +
 					  userName +
@@ -46,14 +53,10 @@ function searchAndTweet(succeed, fail) {
 					  tweetId);
 
 			   if (options.dryRun) {
-			       console.log(qtUrl, newTweet);
+			       console.log('dry', tweet.text, newTweet, qtUrl);
 			   } else {
-			       client.post('statuses/update',
-					   { status: newTweet,
-					     attachment_url: qtUrl },
-					   function(err, tweet, response) {
-					       console.log(err || tweet.text);
-					   });
+			       console.log(tweet.text, newTweet, qtUrl);
+			       doTweet(newTweet, qtUrl);
 			   }
 		       } else {
 			   // do nothing
