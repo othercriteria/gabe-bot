@@ -11,15 +11,18 @@ const Twitter = require('twitter');
 const credentials = require('./credentials');
 const client = new Twitter(credentials);
 
-// XXX: starting with just "is good" for now
 const query_good = '"is good" -filter:retweets';
+const query_bad = '"is bad" -filter:retweets';
 
 // Being particular about capitalization and punctutation, since
-// I'll want to be able to easily reverse the statement.
+// I want to be able to easily reverse the statement.
 const re_good = /^(@\w+\s+)*.*\s([A-Z])(\w+(\s\w+)+\s)is good\./
+const re_bad = /^(@\w+\s+)*.*\s([A-Z])(\w+(\s\w+)+\s)is bad\./
 
-const toBad = (match =>
-	       'What if ' + match[2].toLowerCase() + match[3] + 'is bad?');
+const flip = (flipTo =>
+    (match =>
+     'What if ' + match[2].toLowerCase() + match[3] + 'is ' + flipTo + '?')
+);
 
 const doTweet = ((message, url) => {
     client.post('statuses/update',
@@ -30,22 +33,22 @@ const doTweet = ((message, url) => {
 		});
 });
 
-function searchAndTweet(succeed, fail) {
+function searchAndTweet(succeed, fail, query, re, flipper) {
     client.get('search/tweets',
-	       { q: query_good, count: options.numMatches },
+	       { q: query, count: options.numMatches },
 	       function(err, tweets, response) {
 		   if (!tweets.statuses) {
 		       fail(err);
 		   }
 
 		   tweets.statuses.forEach(function(tweet) {
-		       const match = tweet.text.match(re_good);
+		       const match = tweet.text.match(re);
 		       if (match) {
 			   const tweetId = tweet.id_str;
 			   const userId = tweet.user.id_str;
 			   const userName = tweet.user.screen_name;
 
-			   const newTweet = toBad(match);
+			   const newTweet = flipper(match);
 
 			   const qtUrl = ('https://twitter.com/' +
 					  userName +
@@ -67,8 +70,10 @@ function searchAndTweet(succeed, fail) {
 	       });
 }
 
-searchAndTweet(console.log, console.log);
+const doBoth = (() => {
+    searchAndTweet(console.log, console.log, query_good, re_good, flip('bad'));
+    searchAndTweet(console.log, console.log, query_bad, re_bad, flip('good'));
+});
 
-setInterval(function() {
-    searchAndTweet(console.log, console.log);
-}, options.interval * 60 * 1000);
+doBoth()
+setInterval(() => doBoth(), options.interval * 60 * 1000);
