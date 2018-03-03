@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/othercriteria/gabe-bot#readme",
   "dependencies": {
+    "command-line-args": "^5.0.2",
     "twitter": "^1.7.1"
   }
 }
