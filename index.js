@@ -1,3 +1,4 @@
+// Command-line option handling
 const optionDefinitions = [
     { name: 'dry-run', alias: 'd', type: Boolean, defaultValue: false },
     { name: 'num-matches', alias: 'm', type: Number, defaultValue: 20 },
@@ -7,9 +8,13 @@ const commandLineArgs = require('command-line-args');
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
 console.log('Options:', options);
 
+// Twitter client
 const Twitter = require('twitter');
 const credentials = require('./credentials');
 const client = new Twitter(credentials);
+
+// Part-of-speech tagging
+const pos = require('pos');
 
 const query_good = '"is good" -filter:retweets';
 const query_bad = '"is bad" -filter:retweets';

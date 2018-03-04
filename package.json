@@ -18,6 +18,8 @@
   "homepage": "https://github.com/othercriteria/gabe-bot#readme",
   "dependencies": {
     "command-line-args": "^5.0.2",
+    "npm": "^5.7.1",
+    "pos": "^0.4.2",
     "twitter": "^1.7.1"
   }
 }
