@@ -15,18 +15,40 @@ const client = new Twitter(credentials);
 
 // Part-of-speech tagging
 const pos = require('pos');
+const tagger = new pos.Tagger()
+const tagFirstWord = (sentence => {
+    const words = new pos.Lexer().lex(sentence);
+    const taggedWords = tagger.tag(words);
+
+    return taggedWords[0][1];
+});
 
 const query_good = '"is good" -filter:retweets';
 const query_bad = '"is bad" -filter:retweets';
 
-// Being particular about capitalization and punctutation, since
-// I want to be able to easily reverse the statement.
-const re_good = /^(@\w+\s+)*.*?\s([A-Z])(\w+(\s\w+)+\s)is good\./
-const re_bad = /^(@\w+\s+)*.*?\s([A-Z])(\w+(\s\w+)+\s)is bad\./
+/* Being particular about capitalization and punctutation, since
+   I want to be able to easily reverse the statement.
+
+   Structure of match:
+   (1): @-replies
+   (2): Full matching sentence (for POS tagging)
+   (3): (Capital) letter at beginning of first word in matching sentence
+   (4): Rest of matching sentence
+   (5): Rest of matching sentence, except "is good." or "is bad."
+*/
+const re_good = /^(@\w+\s+)*.*?\s(([A-Z])(\w+(,?\s\w+)+\s)is good\.)/
+const re_bad = /^(@\w+\s+)*.*?\s(([A-Z])(\w+(,?\s\w+)+\s)is bad\.)/
 
 const flip = (flipTo =>
-    (match =>
-     'What if ' + match[2].toLowerCase() + match[3] + 'is ' + flipTo + '?')
+    (match => {
+	const tag = tagFirstWord(match[2]);
+	const first = ((tag == 'NNP' || tag == 'NNPS') ?
+		       match[3] :
+		       match[3].toLowerCase());
+	const rest = match[4];
+
+	return 'What if ' + first + rest + 'is ' + flipTo + '?'
+    })
 );
 
 const doTweet = ((message, url) => {
