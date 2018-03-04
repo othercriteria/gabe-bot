@@ -16,8 +16,8 @@ const query_bad = '"is bad" -filter:retweets';
 
 // Being particular about capitalization and punctutation, since
 // I want to be able to easily reverse the statement.
-const re_good = /^(@\w+\s+)*.*\s([A-Z])(\w+(\s\w+)+\s)is good\./
-const re_bad = /^(@\w+\s+)*.*\s([A-Z])(\w+(\s\w+)+\s)is bad\./
+const re_good = /^(@\w+\s+)*.*?\s([A-Z])(\w+(\s\w+)+\s)is good\./
+const re_bad = /^(@\w+\s+)*.*?\s([A-Z])(\w+(\s\w+)+\s)is bad\./
 
 const flip = (flipTo =>
     (match =>
