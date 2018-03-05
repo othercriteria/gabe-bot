@@ -16,11 +16,9 @@ const client = new Twitter(credentials);
 // Part-of-speech tagging
 const pos = require('pos');
 const tagger = new pos.Tagger()
-const tagFirstWord = (sentence => {
+const doTagging = (sentence => {
     const words = new pos.Lexer().lex(sentence);
-    const taggedWords = tagger.tag(words);
-
-    return taggedWords[0][1];
+    return taggedWords = tagger.tag(words);
 });
 
 const query_good = '"is good" -filter:retweets';
@@ -30,24 +28,24 @@ const query_bad = '"is bad" -filter:retweets';
    I want to be able to easily reverse the statement.
 
    Structure of match:
-   (1): @-replies
-   (2): Full matching sentence (for POS tagging)
-   (3): (Capital) letter at beginning of first word in matching sentence
-   (4): Rest of matching sentence
-   (5): Rest of matching sentence, except "is good." or "is bad."
+   (1): Full matching sentence (for POS tagging)
+   (2): (Capital) letter at beginning of first word in matching sentence
+   (3): Rest of matching sentence
+   (4): Rest of matching sentence, except "is good." or "is bad."
 */
-const re_good = /^(@\w+\s+)*.*?\s(([A-Z])(\w+(,?\s\w+)+\s)is good\.)/
-const re_bad = /^(@\w+\s+)*.*?\s(([A-Z])(\w+(,?\s\w+)+\s)is bad\.)/
+const re_replies = /^(@\w+\s?)*(.*)$/
+const re_good = /(([A-Z])(\w+(,?\s\w+)+\s)is good\.)/
+const re_bad = /(([A-Z])(\w+(,?\s\w+)+\s)is bad\.)/
 
 const flip = (flipTo =>
     (match => {
-	const tag = tagFirstWord(match[2]);
-	const first = ((tag == 'NNP' || tag == 'NNPS') ?
-		       match[3] :
-		       match[3].toLowerCase());
-	const rest = match[4];
+	const tagging = doTagging(match[1]);
+	const first = ((tagging[0][1] == 'NNP' || tagging[0][1] == 'NNPS') ?
+		       match[2] :
+		       match[2].toLowerCase());
+	const rest = match[3];
 
-	return 'What if ' + first + rest + 'is ' + flipTo + '?'
+	return 'What if ' + first + rest + 'is ' + flipTo + '?';
     })
 );
 
@@ -69,7 +67,8 @@ function searchAndTweet(succeed, fail, query, re, flipper) {
 		   }
 
 		   tweets.statuses.forEach(function(tweet) {
-		       const match = tweet.text.match(re);
+		       const clean = tweet.text.replace(re_replies, '$2');
+		       const match = clean.match(re);
 		       if (match) {
 			   const tweetId = tweet.id_str;
 			   const userId = tweet.user.id_str;
