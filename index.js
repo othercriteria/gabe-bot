@@ -2,7 +2,9 @@
 const optionDefinitions = [
     { name: 'dry-run', alias: 'd', type: Boolean, defaultValue: false },
     { name: 'num-matches', alias: 'm', type: Number, defaultValue: 20 },
-    { name: 'interval', alias: 'i', type: Number, defaultValue: 5 }
+    { name: 'interval', alias: 'i', type: Number, defaultValue: 5 },
+    { name: 'safe-only', alias: 's', type: Boolean, defaultValue: false },
+    { name: 'verified-only', alias: 'b', type: Boolean, defaultValue: false },
 ];
 const commandLineArgs = require('command-line-args');
 const options = commandLineArgs(optionDefinitions, { camelCase: true });
@@ -21,8 +23,11 @@ const doTagging = (sentence => {
     return taggedWords = tagger.tag(words);
 });
 
-const query_good = '"is good" OR "are good" -filter:retweets';
-const query_bad = '"is bad" OR "are bad" -filter:retweets';
+const query_base = ('-filter:retweets ' +
+		    (options.safeOnly ? 'filter:safe ' : '') +
+		    (options.verifiedOnly ? 'filter:verified ' : ''));
+const query_good = query_base + '"is good" OR "are good"';
+const query_bad = query_base + '"is bad" OR "are bad"';
 
 /* Being particular about capitalization and punctutation, since
    I want to be able to easily reverse the statement.
