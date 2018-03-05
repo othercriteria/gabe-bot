@@ -21,21 +21,21 @@ const doTagging = (sentence => {
     return taggedWords = tagger.tag(words);
 });
 
-const query_good = '"is good" -filter:retweets';
-const query_bad = '"is bad" -filter:retweets';
+const query_good = '"is good" OR "are good" -filter:retweets';
+const query_bad = '"is bad" OR "are bad" -filter:retweets';
 
 /* Being particular about capitalization and punctutation, since
    I want to be able to easily reverse the statement.
 
    Structure of match:
-   (1): Full matching sentence (for POS tagging)
-   (2): (Capital) letter at beginning of first word in matching sentence
-   (3): Rest of matching sentence
-   (4): Rest of matching sentence, except "is good." or "is bad."
+   (1): full matching sentence (for POS tagging)
+   (2): (capital) letter at beginning of first word in matching sentence
+   (3): rest of matching sentence, except for valence, e.g., "good."
+   (4): internal words of matching sentence
+   (5): "is" or "are"
 */
-const re_replies = /^(@\w+\s?)*(.*)$/
-const re_good = /(([A-Z])(\w+(,?\s\w+)+\s)is good\.)/
-const re_bad = /(([A-Z])(\w+(,?\s\w+)+\s)is bad\.)/
+const re_good = /(([A-Z])(\w+(,?\s\w+)+\s(is|are)\s)good\.)/
+const re_bad = /(([A-Z])(\w+(,?\s\w+)+\s(is|are)\s)bad\.)/
 
 const flip = (flipTo =>
     (match => {
@@ -45,7 +45,7 @@ const flip = (flipTo =>
 		       match[2].toLowerCase());
 	const rest = match[3];
 
-	return 'What if ' + first + rest + 'is ' + flipTo + '?';
+	return 'What if ' + first + rest + flipTo + '?';
     })
 );
 
@@ -67,7 +67,8 @@ function searchAndTweet(succeed, fail, query, re, flipper) {
 		   }
 
 		   tweets.statuses.forEach(function(tweet) {
-		       const clean = tweet.text.replace(re_replies, '$2');
+		       const clean = tweet.text.replace(/^(@\w+\s?)*(.*?)$/,
+							'$2');
 		       const match = clean.match(re);
 		       if (match) {
 			   const tweetId = tweet.id_str;
