@@ -72,8 +72,7 @@ function searchAndTweet(succeed, fail, query, re, flipper) {
 		   }
 
 		   tweets.statuses.forEach(function(tweet) {
-		       const clean = tweet.text.replace(/^(@\w+\s?)*(.*?)$/,
-							'$2');
+		       const clean = tweet.text.replace(/^(@\w+\s?)*/, '');
 		       const match = clean.match(re);
 		       if (match) {
 			   const tweetId = tweet.id_str;
